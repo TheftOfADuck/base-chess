@@ -1,3 +1,6 @@
 .boardRank {
-    height: 80px;
+    width: 80vw;
+    height: 10vw;
+    max-width: 640px;
+    max-height: 80px;
 }

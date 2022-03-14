@@ -14,8 +14,8 @@ class Square extends React.Component {
 
         return (
             <span className={"Square " + containerClass}>
-                {this.props.isAttackedKing ? <span onClick={clickFunction} className="CheckMarker"/> : null}
-                {this.props.isValidMove ? <span onClick={clickFunction} className={this.props.piece ? "CaptureMarker" : "MoveMarker"}/> : null}
+                {this.props.isAttackedKing ? <span onClick={clickFunction} className="Marker CheckMarker"/> : null}
+                {this.props.isValidMove ? <span onClick={clickFunction} className={this.props.piece ? "Marker CaptureMarker" : "Marker MoveMarker"}/> : null}
                 {this.props.squareId && this.props.squareId === this.props.pawnBeingPromoted ?
                     <PawnPromotionRank
                     squareId={this.props.squareId}

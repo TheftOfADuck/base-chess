@@ -1,5 +1,6 @@
 import React from "react"
 import {v4 as uuidv4} from 'uuid'
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 import Board from '../Board/Board.js'
 import CaptureRow from '../CaptureRow/CaptureRow.js'
@@ -78,6 +79,10 @@ class App extends React.Component {
             })
     }
 
+    resetGame = () => {
+        this.updateState(ValidMovesHelper.defaultGameState)
+    }
+
     componentDidMount = () => {
         // Poll the backend for current game state, only when a game isn't started, or it's the opponent's turn
         this.statePollProcess = setInterval(() => {
@@ -92,7 +97,7 @@ class App extends React.Component {
         clearInterval(this.statePollProcess)
     }
 
-    updateState(state, callback=null) {
+    updateState(state, callback = null) {
         // To allow sharing of code between frontend and backend, part of the validation logic has been moved to ValidMovesHelper
         // Each time we update the state of the React components, we must also update the state of the helper
         // Otherwise, the helper state falls out of sync with the frontend state, and getValidMoves will return the wrong results
@@ -215,12 +220,12 @@ class App extends React.Component {
             }
 
             this.updateState(frontendState, () => {
-                    this.postMove(backendState)
-                    // State updates are asynchronous. We do this as a callback to ensure the state is correct when calculating valid moves
-                    if (this.state.attackedKing && this.validMovesHelper.getCheckmate()) {
-                        this.updateState({checkmate: true})
-                    }
-                })
+                this.postMove(backendState)
+                // State updates are asynchronous. We do this as a callback to ensure the state is correct when calculating valid moves
+                if (this.state.attackedKing && this.validMovesHelper.getCheckmate()) {
+                    this.updateState({checkmate: true})
+                }
+            })
         }
     }
 
@@ -228,27 +233,34 @@ class App extends React.Component {
         return (
             <>
                 <h1>base-chess</h1>
-                <NewGameWidget
-                    joinPublicGame={this.joinPublicGame}
-                    joinPrivateGame={this.joinPrivateGame}
-                    createPrivateGame={this.createPrivateGame}
-                    gameId={this.state.gameId}
-                    checkmate={this.state.checkmate}
-                    />
-                {this.state.gameId !== null && this.state.gameStatus !== "started" ? <p>Waiting for second player</p> : null}
-                <CaptureRow capturedPieces={this.state.playerColour === "white" ? this.state.blackCaptures : this.state.whiteCaptures}/>
-                <Board
-                    playerColour={this.state.playerColour}
-                    onSquareSelect={this.onSquareSelect}
-                    pieces={this.state.activePieces}
-                    selectedSquare={this.state.selectedSquare}
-                    attackedKing={this.state.attackedKing}
-                    validMoves={this.state.validMoves}
-                    pawnBeingPromoted={this.state.pawnBeingPromoted}
-                    onPawnPromotion={this.onPawnPromotion}
-                />
-                <CaptureRow capturedPieces={this.state.playerColour === "white" ? this.state.whiteCaptures : this.state.blackCaptures}/>
-
+                <div className="container">
+                    <div className="row">
+                        <div className="col-lg">
+                            <CaptureRow capturedPieces={this.state.playerColour === "white" ? this.state.blackCaptures : this.state.whiteCaptures}/>
+                            <Board
+                                playerColour={this.state.playerColour}
+                                onSquareSelect={this.onSquareSelect}
+                                pieces={this.state.activePieces}
+                                selectedSquare={this.state.selectedSquare}
+                                attackedKing={this.state.attackedKing}
+                                validMoves={this.state.validMoves}
+                                pawnBeingPromoted={this.state.pawnBeingPromoted}
+                                onPawnPromotion={this.onPawnPromotion}
+                            />
+                            <CaptureRow capturedPieces={this.state.playerColour === "white" ? this.state.whiteCaptures : this.state.blackCaptures}/>
+                        </div>
+                        <div className="col-sm">
+                            <NewGameWidget
+                                joinPublicGame={this.joinPublicGame}
+                                joinPrivateGame={this.joinPrivateGame}
+                                createPrivateGame={this.createPrivateGame}
+                                resetFunction={this.resetGame}
+                                gameId={this.state.gameId}
+                                checkmate={this.state.checkmate}
+                            />
+                        </div>
+                    </div>
+                </div>
             </>
         );
     }

@@ -1,0 +1,7 @@
+.NewGameOption {
+    background-color: lightgrey;
+    padding: 10px;
+    border-style: groove;
+    border-color: black;
+    border-radius: 10px;
+}
