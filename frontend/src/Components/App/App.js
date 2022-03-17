@@ -30,10 +30,10 @@ class App extends React.Component {
         this.validMovesHelper = new ValidMovesHelper(this.state)
     }
 
-    makApiCall = (endpoint, body) => {
+    makApiCall = async (endpoint, body) => {
         let hostName = process.env.REACT_APP_API_HOSTNAME || `https://${appName}-api.theftofaduck.com`
         console.log(`Requesting ${hostName}/${endpoint} with:`, body)
-        fetch(`${hostName}/${endpoint}`, {
+        let response = await fetch(`${hostName}/${endpoint}`, {
             method: "POST",
             headers: {
                 'Accept': 'application/json',
@@ -41,23 +41,21 @@ class App extends React.Component {
             },
             body: JSON.stringify(body)
         })
-            .then(result => result.json())
-            .then(result => {
-                console.log(`Response from ${endpoint}:`, result)
-                this.updateState(result)
-            })
+        let jsonResult = await response.json()
+        console.log(`Response from ${endpoint}:`, jsonResult)
+        return jsonResult
     }
 
     joinPublicGame = (colour) => {
-        this.makApiCall('game/start-public', {playerColour: colour, playerId: this.state.playerId})
+        this.makApiCall('game/start-public', {playerColour: colour, playerId: this.state.playerId}).then(r => this.updateState(r))
     }
 
     createPrivateGame = (colour) => {
-        this.makApiCall('game/start-private', {playerColour: colour, playerId: this.state.playerId})
+        this.makApiCall('game/start-private', {playerColour: colour, playerId: this.state.playerId}).then(r => this.updateState(r))
     }
 
     joinPrivateGame = (colour, gameId) => {
-        this.makApiCall(`game/${gameId}/join`, {playerColour: colour, gameId: gameId, playerId: this.state.playerId})
+        this.makApiCall(`game/${gameId}/join`, {playerColour: colour, gameId: gameId, playerId: this.state.playerId}).then(r => this.updateState(r))
         // TODO - Feedback to UI if gameId is invalid. This will be for typos, or the game is in play and you're not a participant
     }
 
@@ -71,9 +69,10 @@ class App extends React.Component {
             .then(result => result.json())
             .then(result => {
                 // Only update state if the backend is ahead of the frontend. Prevents rubber-banding whilst the backend is updating
-                if (this.state.playerColour === null
+                if ((result.playerColour && this.state.playerColour !== result.playerColour)
                     || result.turnNumber > this.state.turnNumber
                     || (result.turnNumber === this.state.turnNumber && result.turnColour !== this.state.turnColour)) {
+                    console.log("Updating State", this.state, result)
                     this.updateState(result)
                 }
             })
@@ -230,6 +229,7 @@ class App extends React.Component {
     }
 
     render() {
+        console.log("RENDER: App")
         return (
             <>
                 <h1>base-chess</h1>
@@ -254,7 +254,7 @@ class App extends React.Component {
                                 joinPublicGame={this.joinPublicGame}
                                 joinPrivateGame={this.joinPrivateGame}
                                 createPrivateGame={this.createPrivateGame}
-                                resetFunction={this.resetGame}
+                                resetGame={this.resetGame}
                                 gameId={this.state.gameId}
                                 checkmate={this.state.checkmate}
                             />

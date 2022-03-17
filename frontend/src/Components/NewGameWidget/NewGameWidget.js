@@ -9,7 +9,6 @@ class NewGameWidget extends React.Component {
         let colourChoice = [...event.target].filter(x => x.name === "colour").filter(x => x.checked)[0].value
         let privateGame = [...event.target].filter(x => x.name === "privateGame")[0].checked
 
-        console.log(privateGame)
         if (privateGame) {
             this.props.createPrivateGame(colourChoice)
         } else {
@@ -25,13 +24,15 @@ class NewGameWidget extends React.Component {
     }
 
     render() {
+        console.log("RENDER: NewGameWidget", this.props)
+
         return (
             <>
                 {this.props.gameId && !this.props.checkmate ?
                     <>
                         <p><strong>Game ID:</strong> {this.props.gameId}</p>
                         {/* TODO - Waiting for second player*/}
-                        <p><button onClick={this.props.resetFunction}>Start new game</button></p>
+                        <p><button onClick={this.props.resetGame}>Start new game</button></p>
                     </> :
                     <>
                         <div className="NewGameOption">
