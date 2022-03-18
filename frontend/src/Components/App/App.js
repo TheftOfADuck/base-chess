@@ -232,7 +232,7 @@ class App extends React.Component {
     }
 
     render() {
-        console.log("RENDER: App")
+        console.log("RENDER: App", this.state)
         return (
             <>
                 <h1>base-chess</h1>

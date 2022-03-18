@@ -4,11 +4,10 @@ import "./NewGameWidget.css"
 
 class NewGameWidget extends React.Component {
 
-    queueGame = (event) => {
+    queueGame = (event, privateGame) => {
         event.preventDefault()
+        this.props.resetGame()
         let colourChoice = [...event.target].filter(x => x.name === "colour").filter(x => x.checked)[0].value
-        let privateGame = [...event.target].filter(x => x.name === "privateGame")[0].checked
-
         if (privateGame) {
             this.props.createPrivateGame(colourChoice)
         } else {
@@ -18,6 +17,7 @@ class NewGameWidget extends React.Component {
 
     joinPrivateGame = (event) => {
         event.preventDefault()
+        this.props.resetGame()
         let colourChoice = [...event.target].filter(x => x.name === "colour").filter(x => x.checked)[0].value
         let gameId = [...event.target].filter(x => x.id === "gameId")[0].value
         this.props.joinPrivateGame(colourChoice, gameId)
@@ -37,23 +37,21 @@ class NewGameWidget extends React.Component {
                     <>
                         <div className="NewGameOption">
                             <h3>Join Public Game</h3>
-                            <form onSubmit={this.queueGame}>
+                            <form onSubmit={(event) => this.queueGame(event, false)}>
                                 <p>I play as:</p>
                                 <input type="radio" value="either" name="colour" defaultChecked/>Either<br/>
                                 <input type="radio" value="white" name="colour"/>White<br/>
                                 <input type="radio" value="black" name="colour"/>Black<br/><br/>
-                                <input type="checkbox" name="privateGame" hidden />
                                 <input type="submit" value="Join"/>
                             </form>
                         </div>
                         <div className="NewGameOption">
                             <h3>Create Private Game</h3>
-                            <form onSubmit={this.queueGame}>
+                            <form onSubmit={(event) => this.queueGame(event, true)}>
                                 <p>I play as:</p>
                                 <input type="radio" value="either" name="colour" defaultChecked/>Either<br/>
                                 <input type="radio" value="white" name="colour"/>White<br/>
                                 <input type="radio" value="black" name="colour"/>Black<br/>
-                                <input type="checkbox" name="privateGame" hidden checked/>
                                 <input type="submit" value="Create"/>
                             </form>
                         </div>
