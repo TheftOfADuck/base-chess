@@ -2,8 +2,8 @@
 #    docs.serverless.com
 
 service: base-chess
-app: base-chess
-org: theftofaduck
+#app: ${self:service}
+#org: theftofaduck
 
 frameworkVersion: '3'
 
@@ -11,6 +11,13 @@ provider:
   name: aws
   runtime: nodejs14.x
   region: eu-west-2
+
+  logRetentionInDays: 7
+  logs:
+    restApi:
+      accessLogging: true
+      executionLogging: false
+      level: INFO
 
   iam:
     role:
@@ -84,6 +91,11 @@ functions:
               paths:
                 gameId: true
 
+  maintainStaleQueue:
+    handler: src/endpoints/maintainStaleQueue.lambdaHandler
+    events:
+      - schedule: rate(1 minute)
+
 resources:
   Resources:
     dynamoGamesTable:
@@ -122,14 +134,13 @@ resources:
             KeyType: HASH
         BillingMode: PAY_PER_REQUEST
 
-
 plugins:
   - serverless-domain-manager # https://www.serverless.com/blog/serverless-api-gateway-domain
   - serverless-offline # https://www.serverless.com/plugins/serverless-offline
   - serverless-dotenv-plugin # https://www.serverless.com/plugins/serverless-dotenv-plugin
 
 custom:
-  customDomain:
+  customDomain: # TODO - How do I point these at different stages?
     domainName: ${self:service}-api.theftofaduck.com
     certificateName : '*.theftofaduck.com'
     createRoute53Record: true

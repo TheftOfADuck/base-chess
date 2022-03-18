@@ -9,7 +9,7 @@
     "shared": "file:../shared"
   },
   "scripts": {
-    "start": "serverless offline --stage=dev",
+    "start": "serverless offline --stage=dev --printOutput",
     "deploy": "serverless deploy",
     "destroy": "serverless remove"
   }

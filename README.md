@@ -4,9 +4,10 @@ To build this application, you must have the following tools globally installed:
 - npm >= 8.3.1.
 - docker >= 20.10.10. (Only for running the backend locally)
 - serverless >= 3.7.3. [npm link](https://www.npmjs.com/package/serverless)
-- serverless-domain-manager >= 6.0.2. [npm link](https://www.npmjs.com/package/serverless-domain-manager)
-- serverless-offline >= 8.5.0. [npm link](https://www.npmjs.com/package/serverless-offline)
-- serverless-dotenv-plugin >= 3.12.2. [npm link](https://www.npmjs.com/package/serverless-dotenv-plugin)
+
+A variety of serverless plugins, installed globally. See the `plugins` section of `backend\serverless.yml` for details. Ensure that these are also
+installed with `npm install -g`, and **not** `serverless plugin install`. The latter installs serverless and the plugins into the current project's
+`node_modules`. which massively bloats the deployment.
 
 # Project Structure
 This repository is a monorepo of three components:

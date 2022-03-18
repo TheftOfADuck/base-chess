@@ -16,7 +16,8 @@ async function queueNewGame(playerId, allowWhiteOpponents, allowBlackOpponents, 
 
     let newGameId = randomWords({exactly: 5, join: "-"})
 
-    let newQueueItem = { // TODO - Add timestamp here, so I can clear down old queued games
+    let newQueueItem = {
+        startTime: new Date().toISOString(),
         gameId: newGameId,
         allowWhite: allowWhiteOpponents,
         allowBlack: allowBlackOpponents,

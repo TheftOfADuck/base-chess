@@ -28,7 +28,6 @@ class App extends React.Component {
         this.statePollProcess = null
         this.state = Object.assign({...this.defaultClientState}, ValidMovesHelper.defaultServerState)
         this.state.playerId = playerId
-        console.log(this.defaultClientState)
         this.validMovesHelper = new ValidMovesHelper(this.state)
     }
 
@@ -76,6 +75,7 @@ class App extends React.Component {
                     || (result.turnNumber === this.state.turnNumber && result.turnColour !== this.state.turnColour)) {
                     console.log("Updating State", this.state, result)
                     this.updateState(result)
+                    // TODO - Add feedback to the UI if this fails. For example, if the gameID doesn't exist 'cause it's been cleared down
                 }
             })
     }
