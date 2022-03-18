@@ -10,6 +10,14 @@ import {appName} from "shared/src/constants.js";
 
 class App extends React.Component {
 
+    defaultClientState = {
+        playerColour: null,
+        validMoves: [], // Array of squares the currently selected piece can move to
+        selectedPiece: null, // Piece selected by user's first click
+        selectedSquare: null, // Square ID selected b user's first click
+        pawnBeingPromoted: null // squareId of a pawn currently being promoted
+    }
+
     constructor(props) {
         let playerId = localStorage.getItem("playerId")
         if (!playerId) {
@@ -18,15 +26,9 @@ class App extends React.Component {
         }
         super(props);
         this.statePollProcess = null
-        this.state = Object.assign({
-            // Client-side only state. The backend doesn't know these
-            playerId: playerId,
-            playerColour: null,
-            validMoves: [], // Array of squares the currently selected piece can move to
-            selectedPiece: null, // Piece selected by user's first click
-            selectedSquare: null, // Square ID selected b user's first click
-            pawnBeingPromoted: null // squareId of a pawn currently being promoted
-        }, ValidMovesHelper.defaultGameState)
+        this.state = Object.assign({...this.defaultClientState}, ValidMovesHelper.defaultServerState)
+        this.state.playerId = playerId
+        console.log(this.defaultClientState)
         this.validMovesHelper = new ValidMovesHelper(this.state)
     }
 
@@ -79,7 +81,8 @@ class App extends React.Component {
     }
 
     resetGame = () => {
-        this.updateState(ValidMovesHelper.defaultGameState)
+        let defaultState = Object.assign({...this.defaultClientState}, ValidMovesHelper.defaultServerState)
+        this.updateState(defaultState)
     }
 
     componentDidMount = () => {

@@ -56,7 +56,7 @@ async function startQueuedGame(secondPlayerId, playerColour, queuedItem, isPriva
     }
 
     // Create a new game, with the players set accordingly
-    let newGame = Object.assign({players: playerConfig}, ValidMovesHelper.defaultGameState)
+    let newGame = Object.assign({players: playerConfig}, ValidMovesHelper.defaultServerState)
     newGame.gameId = queuedItem.gameId
     newGame.gameStatus = "started"
     await client.send(new PutItemCommand({
