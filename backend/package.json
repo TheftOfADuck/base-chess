@@ -10,7 +10,9 @@
   },
   "scripts": {
     "start": "serverless offline --stage=dev --printOutput",
-    "deploy": "serverless deploy",
-    "destroy": "serverless remove"
+    "deploy": "serverless deploy --stage=test",
+    "destroy": "serverless remove --stage=test",
+    "deploy:prod": "serverless deploy --stage=prod",
+    "destroy:prod": "serverless remove --stage=prod"
   }
 }

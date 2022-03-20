@@ -32,7 +32,7 @@ class App extends React.Component {
     }
 
     makApiCall = async (endpoint, body) => {
-        let hostName = process.env.REACT_APP_API_HOSTNAME || `https://${appName}-api.theftofaduck.com`
+        let hostName = process.env.REACT_APP_API_HOSTNAME || `https://UNSET_HOSTNAME`
         console.log(`Requesting ${hostName}/${endpoint} with:`, body)
         let response = await fetch(`${hostName}/${endpoint}`, {
             method: "POST",
@@ -65,7 +65,7 @@ class App extends React.Component {
     }
 
     getGameState = () => {
-        let hostName = process.env.REACT_APP_API_HOSTNAME || `https://${appName}-api.theftofaduck.com`
+        let hostName = process.env.REACT_APP_API_HOSTNAME || `https://UNSET_HOSTNAME`
         fetch(`${hostName}/game/${this.state.gameId}/state?playerId=${this.state.playerId}`)
             .then(result => result.json())
             .then(result => {

@@ -37,7 +37,7 @@ async function getGameState(gameId, playerId) {
         if (!getPublicQueueResponse.Item && !getPrivateQueueResponse.Item ) {
             return {
                 statusCode: 400,
-                responseBody: {msg: "Invalid GameId"}
+                responseBody: {msg: "Invalid gameId"}
             }
         }
 

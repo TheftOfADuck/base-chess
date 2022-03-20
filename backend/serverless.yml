@@ -11,6 +11,7 @@ provider:
   name: aws
   runtime: nodejs14.x
   region: eu-west-2
+  stage: dev
 
   logRetentionInDays: 7
   logs:
@@ -41,6 +42,8 @@ provider:
 functions:
   postStartPublicGame:
     handler: src/endpoints/postStartPublicGame.lambdaHandler
+    environment:
+      STAGE_NAME: ${self:custom.stage}
     events:
       - http:
           path: game/start-public
@@ -50,6 +53,8 @@ functions:
 
   postStartPrivateGame:
     handler: src/endpoints/postStartPrivateGame.lambdaHandler
+    environment:
+      STAGE_NAME: ${self:custom.stage}
     events:
       - http:
           path: game/start-private
@@ -59,6 +64,8 @@ functions:
 
   postJoinPrivateGame:
     handler: src/endpoints/postJoinPrivateGame.lambdaHandler
+    environment:
+      STAGE_NAME: ${self:custom.stage}
     events:
       - http:
           path: game/{gameId}/join
@@ -72,6 +79,8 @@ functions:
 
   getGameState:
     handler: src/endpoints/getGameState.lambdaHandler
+    environment:
+      STAGE_NAME: ${self:custom.stage}
     events:
       - http:
           path: game/{gameId}/state
@@ -85,6 +94,8 @@ functions:
 
   postMove:
     handler: src/endpoints/postMove.lambdaHandler
+    environment:
+      STAGE_NAME: ${self:custom.stage}
     events:
       - http:
           path: game/{gameId}/move
@@ -98,6 +109,8 @@ functions:
 
   maintainStaleQueue:
     handler: src/endpoints/maintainStaleQueue.lambdaHandler
+    environment:
+      STAGE_NAME: ${self:custom.stage}
     events:
       - schedule: rate(1 minute)
 
@@ -106,7 +119,7 @@ resources:
     dynamoGamesTable:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: ${self:service}-games
+        TableName: ${self:service}-${self:custom.stage}-games
         AttributeDefinitions:
           - AttributeName: gameId
             AttributeType: S
@@ -118,7 +131,7 @@ resources:
     dynamoPublicQueueTable:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: ${self:service}-public-queue
+        TableName: ${self:service}-${self:custom.stage}-public-queue
         AttributeDefinitions:
           - AttributeName: gameId
             AttributeType: S
@@ -130,7 +143,7 @@ resources:
     dynamoPrivateQueueTable:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: ${self:service}-private-queue
+        TableName: ${self:service}-${self:custom.stage}-private-queue
         AttributeDefinitions:
           - AttributeName: gameId
             AttributeType: S
@@ -145,11 +158,19 @@ plugins:
   - serverless-dotenv-plugin # https://www.serverless.com/plugins/serverless-dotenv-plugin
 
 custom:
-  allowedCorsOrigins:
-    - http://${self:service}.theftofaduck.com
+  stage: ${opt:stage, self:provider.stage}
+  allowedCorsOrigins: # TODO - Make this only allow prod -> prod and test -> test talk
+    - http://${self:service}-prod.theftofaduck.com
+    - http://${self:service}-test.theftofaduck.com
     - http://localhost:3000
-  customDomain: # TODO - How do I point these at different stages?
-    domainName: ${self:service}-api.theftofaduck.com
+  domains: # TODO - Make these service.api.domain, not service-api.domain
+    dev: ${self:service}-api-dev.theftofaduck.com
+    test: ${self:service}-api-test.theftofaduck.com
+    prod: ${self:service}-api-prod.theftofaduck.com
+
+  customDomain:
+    domainName: ${self:custom.domains.${self:custom.stage}}
+    stage: ${self:custom.stage}
     certificateName : '*.theftofaduck.com'
     createRoute53Record: true
     endpointType: regional

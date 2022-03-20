@@ -44,7 +44,7 @@ async function postJoinPrivateGame(secondPlayerId, playerColour, gameId) {
             responseBody: {"msg": "Invalid gameId"}
         }
     }
-
+    // TODO - Don't let a player join their own queued game. This would break things
     let queueItem = unmarshall(getQueueResults.Item)
     await startQueuedGame(secondPlayerId, playerColour, queueItem, true)
     return {

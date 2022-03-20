@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "bootstrap": "^5.1.3",
+    "env-cmd": "^10.1.0",
     "react": "^17.0.2",
     "react-bootstrap": "^2.2.1",
     "react-dom": "^17.0.2",
@@ -14,8 +15,10 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "deploy": "react-scripts build && aws s3 sync build/ s3://base-chess.theftofaduck.com",
-    "destroy": "aws s3 rm s3://base-chess.theftofaduck.com --recursive"
+    "deploy": "env-cmd -f .env.test react-scripts build && aws s3 sync build/ s3://base-chess-test.theftofaduck.com",
+    "destroy": "aws s3 rm s3://base-chess-test.theftofaduck.com --recursive",
+    "deploy:prod": "env-cmd -f .env.prod react-scripts build && aws s3 sync build/ s3://base-chess.theftofaduck.com",
+    "destroy:prod": "aws s3 rm s3://base-chess.theftofaduck.com --recursive"
   },
   "eslintConfig": {
     "extends": [

@@ -32,6 +32,7 @@ async function postStartPublicGame(playerId, playerColour) {
         for (let queuedGame of scanResults.Items) {
             queuedGame = unmarshall(queuedGame)
             // TODO - Filter this at the scan/query level, not here in the application
+            // TODO - Don't let a player join their own queued game. This would break things
             // Check that this player's and the queuing player's colour choices are compatible
             if ((!queuedGame.allowWhite && playerColour === "white") || (!queuedGame.allowBlack && playerColour === "black")) {
                 continue
