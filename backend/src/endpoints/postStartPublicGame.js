@@ -2,15 +2,16 @@ const {ScanCommand} = require("@aws-sdk/client-dynamodb")
 const {unmarshall} = require("@aws-sdk/util-dynamodb")
 
 const {queueNewGame, startQueuedGame} = require("../gameQueuer.js")
-const {corsHeaders, publicQueueTableName} = require("shared/src/constants.js")
+const {publicQueueTableName} = require("shared/src/constants.js")
 const {dynamodbClient} = require("../aws_clients");
+const getCorsHeaders = require("../getCorsHeaders")
 
 async function lambdaHandler(event) {
     let requestBody = JSON.parse(event.body)
     let response = await postStartPublicGame(requestBody.playerId, requestBody.playerColour)
     return {
         statusCode: response.statusCode,
-        headers: corsHeaders,
+        headers: getCorsHeaders(event.headers.origin),
         body: JSON.stringify(response.responseBody),
     };
 }

@@ -45,7 +45,8 @@ functions:
       - http:
           path: game/start-public
           method: post
-          cors: true
+          cors:
+            origins: ${self:custom.allowedCorsOrigins}
 
   postStartPrivateGame:
     handler: src/endpoints/postStartPrivateGame.lambdaHandler
@@ -53,7 +54,8 @@ functions:
       - http:
           path: game/start-private
           method: post
-          cors: true
+          cors:
+            origins: ${self:custom.allowedCorsOrigins}
 
   postJoinPrivateGame:
     handler: src/endpoints/postJoinPrivateGame.lambdaHandler
@@ -61,7 +63,8 @@ functions:
       - http:
           path: game/{gameId}/join
           method: post
-          cors: true
+          cors:
+            origins: ${self:custom.allowedCorsOrigins}
           request:
             parameters:
               paths:
@@ -73,7 +76,8 @@ functions:
       - http:
           path: game/{gameId}/state
           method: get
-          cors: true
+          cors:
+            origins: ${self:custom.allowedCorsOrigins}
           request:
             parameters:
               paths:
@@ -85,7 +89,8 @@ functions:
       - http:
           path: game/{gameId}/move
           method: post
-          cors: true
+          cors:
+            origins: ${self:custom.allowedCorsOrigins}
           request:
             parameters:
               paths:
@@ -140,6 +145,9 @@ plugins:
   - serverless-dotenv-plugin # https://www.serverless.com/plugins/serverless-dotenv-plugin
 
 custom:
+  allowedCorsOrigins:
+    - http://${self:service}.theftofaduck.com
+    - http://localhost:3000
   customDomain: # TODO - How do I point these at different stages?
     domainName: ${self:service}-api.theftofaduck.com
     certificateName : '*.theftofaduck.com'

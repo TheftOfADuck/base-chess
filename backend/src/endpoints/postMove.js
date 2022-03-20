@@ -2,8 +2,9 @@ const {GetItemCommand, PutItemCommand} = require("@aws-sdk/client-dynamodb")
 const {marshall, unmarshall} = require("@aws-sdk/util-dynamodb")
 
 const {ValidMovesHelper} = require("shared/src/validMovesHelper.js")
-const {corsHeaders, gamesTableName} = require("shared/src/constants.js")
+const {gamesTableName} = require("shared/src/constants.js")
 const {dynamodbClient} = require("../aws_clients");
+const getCorsHeaders = require("../getCorsHeaders");
 
 async function lambdaHandler(event) {
     let gameId = event.pathParameters.gameId
@@ -20,7 +21,7 @@ async function lambdaHandler(event) {
 
     return {
         statusCode: response.statusCode,
-        headers: corsHeaders,
+        headers: getCorsHeaders(event.headers.origin),
         body: JSON.stringify(response.responseBody),
     };
 }

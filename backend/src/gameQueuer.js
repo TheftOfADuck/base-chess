@@ -1,20 +1,17 @@
-const {DeleteItemCommand, DynamoDBClient, PutItemCommand} = require("@aws-sdk/client-dynamodb")
+const {DeleteItemCommand, PutItemCommand} = require("@aws-sdk/client-dynamodb")
 const {marshall} = require("@aws-sdk/util-dynamodb")
 const randomWords = require("random-words")
 
 const {ValidMovesHelper} = require("shared/src/validMovesHelper.js")
 const {gamesTableName, privateQueueTableName, publicQueueTableName} = require("shared/src/constants.js")
+const {dynamodbClient} = require("./aws_clients");
 
 
 async function queueNewGame(playerId, allowWhiteOpponents, allowBlackOpponents, isPrivate) {
-    let clientConfig = {region: "eu-west-2"}
-    if (process.env.AWS_DYNAMODB_ENDPOINT) {
-        clientConfig.endpoint = process.env.AWS_DYNAMODB_ENDPOINT
-    }
-    const client = new DynamoDBClient(clientConfig)
     const queueTable = isPrivate ? privateQueueTableName : publicQueueTableName
 
     let newGameId = randomWords({exactly: 5, join: "-"})
+    console.log("Generated gameId:", newGameId)
 
     let newQueueItem = {
         startTime: new Date().toISOString(),
@@ -25,20 +22,15 @@ async function queueNewGame(playerId, allowWhiteOpponents, allowBlackOpponents, 
     }
 
     // TODO - Test how dynamoDB handles the rare cases of PK clashes, and write code to retry
-    await client.send(new PutItemCommand({
+    await dynamodbClient.send(new PutItemCommand({
         TableName: queueTable,
         Item: marshall(newQueueItem)
     }))
-    console.log("Generated GameId:", newGameId)
+
     return newGameId
 }
 
 async function startQueuedGame(secondPlayerId, playerColour, queuedItem, isPrivate) {
-    let clientConfig = {region: "eu-west-2"}
-    if (process.env.AWS_DYNAMODB_ENDPOINT) {
-        clientConfig.endpoint = process.env.AWS_DYNAMODB_ENDPOINT
-    }
-    const client = new DynamoDBClient(clientConfig)
     const queueTable = isPrivate ? privateQueueTableName : publicQueueTableName
 
     // Decide how to assign the white and black colours
@@ -60,17 +52,17 @@ async function startQueuedGame(secondPlayerId, playerColour, queuedItem, isPriva
     let newGame = Object.assign({players: playerConfig}, ValidMovesHelper.defaultServerState)
     newGame.gameId = queuedItem.gameId
     newGame.gameStatus = "started"
-    await client.send(new PutItemCommand({
+    await dynamodbClient.send(new PutItemCommand({
         TableName: gamesTableName,
         Item: marshall(newGame)
     }))
 
     // Remove this game from the queue
-    await client.send(new DeleteItemCommand({
+    await dynamodbClient.send(new DeleteItemCommand({
         TableName: queueTable,
         Key: marshall({gameId: queuedItem.gameId})
     }))
-
+    console.log("Joining gameId:", newGame.gameId)
     return newGame.gameId
 }
 
