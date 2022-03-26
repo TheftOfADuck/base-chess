@@ -160,7 +160,7 @@ plugins:
 custom:
   stage: ${opt:stage, self:provider.stage}
   allowedCorsOrigins: # TODO - Make this only allow prod -> prod and test -> test talk
-    - http://${self:service}-prod.theftofaduck.com
+    - http://${self:service}.theftofaduck.com
     - http://${self:service}-test.theftofaduck.com
     - http://localhost:3000
   domains: # TODO - Make these service.api.domain, not service-api.domain

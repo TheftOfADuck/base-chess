@@ -24,7 +24,7 @@ class NewGameWidget extends React.Component {
     }
 
     render() {
-        console.log("RENDER: NewGameWidget", this.props)
+        // console.log("RENDER: NewGameWidget", this.props)
 
         return (
             <>

@@ -14,7 +14,7 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "env-cmd -f .env.dev react-scripts start",
     "deploy": "env-cmd -f .env.test react-scripts build && aws s3 sync build/ s3://base-chess-test.theftofaduck.com",
     "destroy": "aws s3 rm s3://base-chess-test.theftofaduck.com --recursive",
     "deploy:prod": "env-cmd -f .env.prod react-scripts build && aws s3 sync build/ s3://base-chess.theftofaduck.com",

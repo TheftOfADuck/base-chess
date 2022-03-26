@@ -6,7 +6,7 @@ import Square from "../Square/Square.js"
 class CaptureRow extends React.Component {
 
     render() {
-        console.log("RENDER: CaptureRow", this.props)
+        // console.log("RENDER: CaptureRow", this.props)
 
         return (
             <div>

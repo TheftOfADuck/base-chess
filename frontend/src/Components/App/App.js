@@ -6,7 +6,6 @@ import Board from '../Board/Board.js'
 import CaptureRow from '../CaptureRow/CaptureRow.js'
 import NewGameWidget from "../NewGameWidget/NewGameWidget.js"
 import {ValidMovesHelper} from "shared/src/validMovesHelper.js"
-import {appName} from "shared/src/constants.js";
 
 class App extends React.Component {
 
@@ -232,7 +231,7 @@ class App extends React.Component {
     }
 
     render() {
-        console.log("RENDER: App", this.state)
+        // console.log("RENDER: App", this.state)
         return (
             <>
                 <h1>base-chess</h1>
