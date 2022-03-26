@@ -42,36 +42,36 @@ provider:
 functions:
   postStartPublicGame:
     handler: src/endpoints/postStartPublicGame.lambdaHandler
-    environment:
-      STAGE_NAME: ${self:custom.stage}
     events:
       - http:
           path: game/start-public
           method: post
           cors:
-            origins: ${self:custom.allowedCorsOrigins}
+            origins:
+              - ${self:custom.allowedCorsOrigins.${self:custom.stage}}
+              - ${self:custom.allowedCorsOrigins.dev}
 
   postStartPrivateGame:
     handler: src/endpoints/postStartPrivateGame.lambdaHandler
-    environment:
-      STAGE_NAME: ${self:custom.stage}
     events:
       - http:
           path: game/start-private
           method: post
           cors:
-            origins: ${self:custom.allowedCorsOrigins}
+            origins:
+              - ${self:custom.allowedCorsOrigins.${self:custom.stage}}
+              - ${self:custom.allowedCorsOrigins.dev}
 
   postJoinPrivateGame:
     handler: src/endpoints/postJoinPrivateGame.lambdaHandler
-    environment:
-      STAGE_NAME: ${self:custom.stage}
     events:
       - http:
           path: game/{gameId}/join
           method: post
           cors:
-            origins: ${self:custom.allowedCorsOrigins}
+            origins:
+              - ${self:custom.allowedCorsOrigins.${self:custom.stage}}
+              - ${self:custom.allowedCorsOrigins.dev}
           request:
             parameters:
               paths:
@@ -79,14 +79,14 @@ functions:
 
   getGameState:
     handler: src/endpoints/getGameState.lambdaHandler
-    environment:
-      STAGE_NAME: ${self:custom.stage}
     events:
       - http:
           path: game/{gameId}/state
           method: get
           cors:
-            origins: ${self:custom.allowedCorsOrigins}
+            origins:
+              - ${self:custom.allowedCorsOrigins.${self:custom.stage}}
+              - ${self:custom.allowedCorsOrigins.dev}
           request:
             parameters:
               paths:
@@ -94,14 +94,14 @@ functions:
 
   postMove:
     handler: src/endpoints/postMove.lambdaHandler
-    environment:
-      STAGE_NAME: ${self:custom.stage}
     events:
       - http:
           path: game/{gameId}/move
           method: post
           cors:
-            origins: ${self:custom.allowedCorsOrigins}
+            origins:
+              - ${self:custom.allowedCorsOrigins.${self:custom.stage}}
+              - ${self:custom.allowedCorsOrigins.dev}
           request:
             parameters:
               paths:
@@ -109,8 +109,6 @@ functions:
 
   maintainStaleQueue:
     handler: src/endpoints/maintainStaleQueue.lambdaHandler
-    environment:
-      STAGE_NAME: ${self:custom.stage}
     events:
       - schedule: rate(1 minute)
 
@@ -158,11 +156,12 @@ plugins:
   - serverless-dotenv-plugin # https://www.serverless.com/plugins/serverless-dotenv-plugin
 
 custom:
-  stage: ${opt:stage, self:provider.stage}
-  allowedCorsOrigins: # TODO - Make this only allow prod -> prod and test -> test talk
-    - http://${self:service}.theftofaduck.com
-    - http://${self:service}-test.theftofaduck.com
-    - http://localhost:3000
+  stage: ${opt:stage, self:custom.stage}
+  allowedCorsOrigins:
+    dev: http://localhost:3000
+    test: http://${self:service}-test.theftofaduck.com
+    prod: http://${self:service}.theftofaduck.com
+
   domains: # TODO - Make these service.api.domain, not service-api.domain
     dev: ${self:service}-api-dev.theftofaduck.com
     test: ${self:service}-api-test.theftofaduck.com

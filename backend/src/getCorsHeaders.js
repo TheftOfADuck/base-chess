@@ -1,9 +1,7 @@
 function getCorsHeaders(origin) {
     const allowedOrigins = [
-        // TODO - Make work dynamically with staging environments.
-        "http://base-chess.theftofaduck.com",  // Official UI
-        "http://base-chess-test.theftofaduck.com",  // Test Stage environment
-        "http://localhost:3000" // Allow development by 3rd party integrators
+        process.env.CORS_ALLOWED_ORIGIN,
+        "http://localhost:3000" // Always allow localhost, for third parties to develop against
     ]
 
     return allowedOrigins.includes(origin) ? {'Access-Control-Allow-Origin': origin} : {}
