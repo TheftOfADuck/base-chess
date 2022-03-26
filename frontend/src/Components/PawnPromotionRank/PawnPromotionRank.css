@@ -3,17 +3,17 @@
 }
 
 .PromotionSquare {
-    width: 60px;
-    height: 60px;
+    width: 25%;
+    height: 25%;
+    margin-bottom: -5px;
+    max-width: 60px;
+    max-height: 60px;
     background-color: gray;
 }
 
 .PromotionRank {
-    height: 60px;
     border: 10px solid black;
     border-radius: 15px;
-    margin-top: 40px;
-    margin-left: 40px;
     position: absolute;
     display: inline;
 }

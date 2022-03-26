@@ -1,11 +1,11 @@
 import React from "react"
 import {v4 as uuidv4} from 'uuid'
-import 'bootstrap/dist/css/bootstrap.min.css';
 
 import Board from '../Board/Board.js'
 import CaptureRow from '../CaptureRow/CaptureRow.js'
 import NewGameWidget from "../NewGameWidget/NewGameWidget.js"
 import {ValidMovesHelper} from "shared/src/validMovesHelper.js"
+import "./app.css"
 
 class App extends React.Component {
 
@@ -222,6 +222,8 @@ class App extends React.Component {
 
             this.updateState(frontendState, () => {
                 this.postMove(backendState)
+                // TODO - Check for stalemate
+                // TODO - Check for insufficient material and start counter
                 // State updates are asynchronous. We do this as a callback to ensure the state is correct when calculating valid moves
                 if (this.state.attackedKing && this.validMovesHelper.getCheckmate()) {
                     this.updateState({checkmate: true})
@@ -236,32 +238,28 @@ class App extends React.Component {
             <>
                 <h1>base-chess</h1>
                 <div className="container">
-                    <div className="row">
-                        <div className="col-lg">
-                            <CaptureRow capturedPieces={this.state.playerColour === "white" ? this.state.blackCaptures : this.state.whiteCaptures}/>
-                            <Board
-                                playerColour={this.state.playerColour}
-                                onSquareSelect={this.onSquareSelect}
-                                pieces={this.state.activePieces}
-                                selectedSquare={this.state.selectedSquare}
-                                attackedKing={this.state.attackedKing}
-                                validMoves={this.state.validMoves}
-                                pawnBeingPromoted={this.state.pawnBeingPromoted}
-                                onPawnPromotion={this.onPawnPromotion}
-                            />
-                            <CaptureRow capturedPieces={this.state.playerColour === "white" ? this.state.whiteCaptures : this.state.blackCaptures}/>
-                        </div>
-                        <div className="col-sm">
-                            <NewGameWidget
-                                joinPublicGame={this.joinPublicGame}
-                                joinPrivateGame={this.joinPrivateGame}
-                                createPrivateGame={this.createPrivateGame}
-                                resetGame={this.resetGame}
-                                gameId={this.state.gameId}
-                                checkmate={this.state.checkmate}
-                            />
-                        </div>
+                    <div className="BoardGroup">
+                    <CaptureRow capturedPieces={this.state.playerColour === "white" ? this.state.blackCaptures : this.state.whiteCaptures}/>
+                    <Board
+                        playerColour={this.state.playerColour}
+                        onSquareSelect={this.onSquareSelect}
+                        pieces={this.state.activePieces}
+                        selectedSquare={this.state.selectedSquare}
+                        attackedKing={this.state.attackedKing}
+                        validMoves={this.state.validMoves}
+                        pawnBeingPromoted={this.state.pawnBeingPromoted}
+                        onPawnPromotion={this.onPawnPromotion}
+                    />
+                    <CaptureRow capturedPieces={this.state.playerColour === "white" ? this.state.whiteCaptures : this.state.blackCaptures}/>
                     </div>
+                    <NewGameWidget
+                        joinPublicGame={this.joinPublicGame}
+                        joinPrivateGame={this.joinPrivateGame}
+                        createPrivateGame={this.createPrivateGame}
+                        resetGame={this.resetGame}
+                        gameId={this.state.gameId}
+                        checkmate={this.state.checkmate}
+                    />
                 </div>
             </>
         );

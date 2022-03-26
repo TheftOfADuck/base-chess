@@ -46,7 +46,7 @@ class Board extends React.Component {
         if (this.props.playerColour === "black") {
             grid.reverse()
         }
-        return grid
+        return <div className="Board">{grid}</div>
     }
 }
 

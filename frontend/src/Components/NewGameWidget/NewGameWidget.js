@@ -27,7 +27,7 @@ class NewGameWidget extends React.Component {
         // console.log("RENDER: NewGameWidget", this.props)
 
         return (
-            <>
+            <div className="NewGameWidget">
                 {this.props.gameId && !this.props.checkmate ?
                     <>
                         <p><strong>Game ID:</strong> {this.props.gameId}</p>
@@ -68,7 +68,7 @@ class NewGameWidget extends React.Component {
                         </div>
                     </>
                 }
-            </>
+            </div>
         )
     }
 
