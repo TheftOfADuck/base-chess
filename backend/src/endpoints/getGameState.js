@@ -1,8 +1,9 @@
 const {GetItemCommand} = require("@aws-sdk/client-dynamodb")
 const {marshall, unmarshall} = require("@aws-sdk/util-dynamodb")
 
-const {corsHeaders, gamesTableName, privateQueueTableName, publicQueueTableName} = require("shared/src/constants.js")
+const {gamesTableName, privateQueueTableName, publicQueueTableName} = require("shared/src/constants.js")
 const {dynamodbClient} = require("../aws_clients");
+const getCorsHeaders = require("../getCorsHeaders");
 
 async function lambdaHandler(event) {
     let gameId = event.pathParameters.gameId
@@ -10,7 +11,7 @@ async function lambdaHandler(event) {
     let gameState = await getGameState(gameId, playerId)
     return {
         statusCode: gameState.statusCode,
-        headers: corsHeaders,
+        headers: getCorsHeaders(event.headers.origin),
         body: JSON.stringify(gameState.responseBody),
     };
 }
@@ -36,7 +37,7 @@ async function getGameState(gameId, playerId) {
         if (!getPublicQueueResponse.Item && !getPrivateQueueResponse.Item ) {
             return {
                 statusCode: 400,
-                responseBody: {msg: "Invalid GameId"}
+                responseBody: {msg: "Invalid gameId"}
             }
         }
 

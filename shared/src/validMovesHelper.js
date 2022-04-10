@@ -1,6 +1,6 @@
 class ValidMovesHelper {
 
-    static defaultGameState = {
+    static defaultServerState = {
         startDate: new Date().toLocaleDateString(),
         turnColour: "white",
         turnNumber: 1,

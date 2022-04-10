@@ -5,9 +5,17 @@ import Board from '../Board/Board.js'
 import CaptureRow from '../CaptureRow/CaptureRow.js'
 import NewGameWidget from "../NewGameWidget/NewGameWidget.js"
 import {ValidMovesHelper} from "shared/src/validMovesHelper.js"
-import {appName} from "shared/src/constants.js";
+import "./app.css"
 
 class App extends React.Component {
+
+    defaultClientState = {
+        playerColour: null,
+        validMoves: [], // Array of squares the currently selected piece can move to
+        selectedPiece: null, // Piece selected by user's first click
+        selectedSquare: null, // Square ID selected b user's first click
+        pawnBeingPromoted: null // squareId of a pawn currently being promoted
+    }
 
     constructor(props) {
         let playerId = localStorage.getItem("playerId")
@@ -17,22 +25,15 @@ class App extends React.Component {
         }
         super(props);
         this.statePollProcess = null
-        this.state = Object.assign({
-            // Client-side only state. The backend doesn't know these
-            playerId: playerId,
-            playerColour: null,
-            validMoves: [], // Array of squares the currently selected piece can move to
-            selectedPiece: null, // Piece selected by user's first click
-            selectedSquare: null, // Square ID selected b user's first click
-            pawnBeingPromoted: null // squareId of a pawn currently being promoted
-        }, ValidMovesHelper.defaultGameState)
+        this.state = Object.assign({...this.defaultClientState}, ValidMovesHelper.defaultServerState)
+        this.state.playerId = playerId
         this.validMovesHelper = new ValidMovesHelper(this.state)
     }
 
-    makApiCall = (endpoint, body) => {
-        let hostName = process.env.REACT_APP_API_HOSTNAME || `https://${appName}-api.theftofaduck.com`
+    makApiCall = async (endpoint, body) => {
+        let hostName = process.env.REACT_APP_API_HOSTNAME || `https://UNSET_HOSTNAME`
         console.log(`Requesting ${hostName}/${endpoint} with:`, body)
-        fetch(`${hostName}/${endpoint}`, {
+        let response = await fetch(`${hostName}/${endpoint}`, {
             method: "POST",
             headers: {
                 'Accept': 'application/json',
@@ -40,23 +41,21 @@ class App extends React.Component {
             },
             body: JSON.stringify(body)
         })
-            .then(result => result.json())
-            .then(result => {
-                console.log(`Response from ${endpoint}:`, result)
-                this.updateState(result)
-            })
+        let jsonResult = await response.json()
+        console.log(`Response from ${endpoint}:`, jsonResult)
+        return jsonResult
     }
 
     joinPublicGame = (colour) => {
-        this.makApiCall('game/start-public', {playerColour: colour, playerId: this.state.playerId})
+        this.makApiCall('game/start-public', {playerColour: colour, playerId: this.state.playerId}).then(r => this.updateState(r))
     }
 
     createPrivateGame = (colour) => {
-        this.makApiCall('game/start-private', {playerColour: colour, playerId: this.state.playerId})
+        this.makApiCall('game/start-private', {playerColour: colour, playerId: this.state.playerId}).then(r => this.updateState(r))
     }
 
     joinPrivateGame = (colour, gameId) => {
-        this.makApiCall(`game/${gameId}/join`, {playerColour: colour, gameId: gameId, playerId: this.state.playerId})
+        this.makApiCall(`game/${gameId}/join`, {playerColour: colour, gameId: gameId, playerId: this.state.playerId}).then(r => this.updateState(r))
         // TODO - Feedback to UI if gameId is invalid. This will be for typos, or the game is in play and you're not a participant
     }
 
@@ -65,17 +64,24 @@ class App extends React.Component {
     }
 
     getGameState = () => {
-        let hostName = process.env.REACT_APP_API_HOSTNAME || `https://${appName}-api.theftofaduck.com`
+        let hostName = process.env.REACT_APP_API_HOSTNAME || `https://UNSET_HOSTNAME`
         fetch(`${hostName}/game/${this.state.gameId}/state?playerId=${this.state.playerId}`)
             .then(result => result.json())
             .then(result => {
                 // Only update state if the backend is ahead of the frontend. Prevents rubber-banding whilst the backend is updating
-                if (this.state.playerColour === null
+                if ((result.playerColour && this.state.playerColour !== result.playerColour)
                     || result.turnNumber > this.state.turnNumber
                     || (result.turnNumber === this.state.turnNumber && result.turnColour !== this.state.turnColour)) {
+                    console.log("Updating State", this.state, result)
                     this.updateState(result)
+                    // TODO - Add feedback to the UI if this fails. For example, if the gameID doesn't exist 'cause it's been cleared down
                 }
             })
+    }
+
+    resetGame = () => {
+        let defaultState = Object.assign({...this.defaultClientState}, ValidMovesHelper.defaultServerState)
+        this.updateState(defaultState)
     }
 
     componentDidMount = () => {
@@ -92,7 +98,7 @@ class App extends React.Component {
         clearInterval(this.statePollProcess)
     }
 
-    updateState(state, callback=null) {
+    updateState(state, callback = null) {
         // To allow sharing of code between frontend and backend, part of the validation logic has been moved to ValidMovesHelper
         // Each time we update the state of the React components, we must also update the state of the helper
         // Otherwise, the helper state falls out of sync with the frontend state, and getValidMoves will return the wrong results
@@ -215,40 +221,46 @@ class App extends React.Component {
             }
 
             this.updateState(frontendState, () => {
-                    this.postMove(backendState)
-                    // State updates are asynchronous. We do this as a callback to ensure the state is correct when calculating valid moves
-                    if (this.state.attackedKing && this.validMovesHelper.getCheckmate()) {
-                        this.updateState({checkmate: true})
-                    }
-                })
+                this.postMove(backendState)
+                // TODO - Check for stalemate
+                // TODO - Check for insufficient material and start counter
+                // State updates are asynchronous. We do this as a callback to ensure the state is correct when calculating valid moves
+                if (this.state.attackedKing && this.validMovesHelper.getCheckmate()) {
+                    this.updateState({checkmate: true})
+                }
+            })
         }
     }
 
     render() {
+        // console.log("RENDER: App", this.state)
         return (
             <>
                 <h1>base-chess</h1>
-                <NewGameWidget
-                    joinPublicGame={this.joinPublicGame}
-                    joinPrivateGame={this.joinPrivateGame}
-                    createPrivateGame={this.createPrivateGame}
-                    gameId={this.state.gameId}
-                    checkmate={this.state.checkmate}
+                <div className="container">
+                    <div className="BoardGroup">
+                    <CaptureRow capturedPieces={this.state.playerColour === "white" ? this.state.blackCaptures : this.state.whiteCaptures}/>
+                    <Board
+                        playerColour={this.state.playerColour}
+                        onSquareSelect={this.onSquareSelect}
+                        pieces={this.state.activePieces}
+                        selectedSquare={this.state.selectedSquare}
+                        attackedKing={this.state.attackedKing}
+                        validMoves={this.state.validMoves}
+                        pawnBeingPromoted={this.state.pawnBeingPromoted}
+                        onPawnPromotion={this.onPawnPromotion}
                     />
-                {this.state.gameId !== null && this.state.gameStatus !== "started" ? <p>Waiting for second player</p> : null}
-                <CaptureRow capturedPieces={this.state.playerColour === "white" ? this.state.blackCaptures : this.state.whiteCaptures}/>
-                <Board
-                    playerColour={this.state.playerColour}
-                    onSquareSelect={this.onSquareSelect}
-                    pieces={this.state.activePieces}
-                    selectedSquare={this.state.selectedSquare}
-                    attackedKing={this.state.attackedKing}
-                    validMoves={this.state.validMoves}
-                    pawnBeingPromoted={this.state.pawnBeingPromoted}
-                    onPawnPromotion={this.onPawnPromotion}
-                />
-                <CaptureRow capturedPieces={this.state.playerColour === "white" ? this.state.whiteCaptures : this.state.blackCaptures}/>
-
+                    <CaptureRow capturedPieces={this.state.playerColour === "white" ? this.state.whiteCaptures : this.state.blackCaptures}/>
+                    </div>
+                    <NewGameWidget
+                        joinPublicGame={this.joinPublicGame}
+                        joinPrivateGame={this.joinPrivateGame}
+                        createPrivateGame={this.createPrivateGame}
+                        resetGame={this.resetGame}
+                        gameId={this.state.gameId}
+                        checkmate={this.state.checkmate}
+                    />
+                </div>
             </>
         );
     }

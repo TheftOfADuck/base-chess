@@ -1,12 +1,10 @@
 .Square {
-    width: 80px;
-    height: 80px;
+    width: 12vw;
+    height: 12vw;
+    max-width: 80px;
+    max-height: 80px;
     display: inline-block;
 }
-
-/*img:hover {*/
-/*    background-color: aqua;*/
-/*}*/
 
 .WhiteSquare {
     background-color: #F8DFA1;
@@ -21,40 +19,35 @@
 }
 
 .CaptureSquare {
-    width: 40px;
-    height: 40px;
+    width: 5vw;
+    height: 5vw;
+    max-width: 40px;
+    max-height: 40px;
     background-color: gray;
 }
 
-.MoveMarker {
-    margin-top: 20px;
-    margin-left: 20px;
-    width: 40px;
-    height: 40px;
+.Marker {
+    margin-top: min(3vw, 20px);
+    margin-left: min(3vw, 20px);
+    width: 6vw;
+    height: 6vw;
+    max-width: 40px;
+    max-height: 40px;
     border-radius: 50%;
-    background-color: green;
     position: absolute;
+}
+
+.MoveMarker {
+    background-color: green;
     opacity: 0.5;
 }
 
 .CaptureMarker {
-    margin-top: 20px;
-    margin-left: 20px;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
     background-color: red;
-    position: absolute;
     opacity: 0.5;
 }
 
 .CheckMarker {
-    margin-top: 10px;
-    margin-left: 10px;
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
     background-color: crimson;
-    position: absolute;
     opacity: 0.8;
 }

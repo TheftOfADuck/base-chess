@@ -2,15 +2,16 @@ const {ScanCommand} = require("@aws-sdk/client-dynamodb")
 const {unmarshall} = require("@aws-sdk/util-dynamodb")
 
 const {queueNewGame, startQueuedGame} = require("../gameQueuer.js")
-const {corsHeaders, publicQueueTableName} = require("shared/src/constants.js")
+const {publicQueueTableName} = require("shared/src/constants.js")
 const {dynamodbClient} = require("../aws_clients");
+const getCorsHeaders = require("../getCorsHeaders")
 
 async function lambdaHandler(event) {
     let requestBody = JSON.parse(event.body)
     let response = await postStartPublicGame(requestBody.playerId, requestBody.playerColour)
     return {
         statusCode: response.statusCode,
-        headers: corsHeaders,
+        headers: getCorsHeaders(event.headers.origin),
         body: JSON.stringify(response.responseBody),
     };
 }
@@ -31,6 +32,7 @@ async function postStartPublicGame(playerId, playerColour) {
         for (let queuedGame of scanResults.Items) {
             queuedGame = unmarshall(queuedGame)
             // TODO - Filter this at the scan/query level, not here in the application
+            // TODO - Don't let a player join their own queued game. This would break things
             // Check that this player's and the queuing player's colour choices are compatible
             if ((!queuedGame.allowWhite && playerColour === "white") || (!queuedGame.allowBlack && playerColour === "black")) {
                 continue

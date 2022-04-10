@@ -6,6 +6,7 @@ import Square from "../Square/Square.js"
 class Board extends React.Component {
 
     render() {
+        // console.log("RENDER: Board", this.props)
 
         let rankNames = ["1", "2", "3", "4", "5", "6", "7", "8"]
         let fileNames = ["A", "B", "C", "D", "E", "F", "G", "H"]
@@ -45,7 +46,7 @@ class Board extends React.Component {
         if (this.props.playerColour === "black") {
             grid.reverse()
         }
-        return grid
+        return <div className="Board">{grid}</div>
     }
 }
 

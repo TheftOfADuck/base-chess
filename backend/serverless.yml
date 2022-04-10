@@ -2,8 +2,7 @@
 #    docs.serverless.com
 
 service: base-chess
-# app and org for use with dashboard.serverless.com
-#app: base-chess
+#app: ${self:service}
 #org: theftofaduck
 
 frameworkVersion: '3'
@@ -12,7 +11,14 @@ provider:
   name: aws
   runtime: nodejs14.x
   region: eu-west-2
-#  stage: dev
+  stage: dev
+
+  logRetentionInDays: 7
+  logs:
+    restApi:
+      accessLogging: true
+      executionLogging: false
+      level: INFO
 
   iam:
     role:
@@ -24,37 +30,48 @@ provider:
             - dynamodb:GetItem
             - dynamodb:PutItem
             - dynamodb:DeleteItem
-          Resource: "*" # TODO - Limit this to only the game tables
+          Resource:
+            - Fn::GetAtt: [dynamoGamesTable, Arn]
+            - Fn::GetAtt: [dynamoPublicQueueTable, Arn]
+            - Fn::GetAtt: [dynamoPrivateQueueTable, Arn]
 
 
-# you can define service wide environment variables here
-#  environment:
-#    variable1: value1
-
+# TODO - Look into converting from REST to HTTP API (http vs httpAPI event), for cost and speed
+# https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-vs-rest.html
+# https://www.serverless.com/framework/docs/providers/aws/events/http-api
 functions:
   postStartPublicGame:
     handler: src/endpoints/postStartPublicGame.lambdaHandler
     events:
-      - http: # TODO - What's the difference between http and httpApi event types?
+      - http:
           path: game/start-public
           method: post
-          cors: true
+          cors:
+            origins:
+              - ${self:custom.allowedCorsOrigins.${self:custom.stage}}
+              - ${self:custom.allowedCorsOrigins.dev}
 
   postStartPrivateGame:
     handler: src/endpoints/postStartPrivateGame.lambdaHandler
     events:
-      - http: # TODO - What's the difference between http and httpApi event types?
+      - http:
           path: game/start-private
           method: post
-          cors: true
+          cors:
+            origins:
+              - ${self:custom.allowedCorsOrigins.${self:custom.stage}}
+              - ${self:custom.allowedCorsOrigins.dev}
 
   postJoinPrivateGame:
     handler: src/endpoints/postJoinPrivateGame.lambdaHandler
     events:
-      - http: # TODO - What's the difference between http and httpApi event types?
+      - http:
           path: game/{gameId}/join
           method: post
-          cors: true
+          cors:
+            origins:
+              - ${self:custom.allowedCorsOrigins.${self:custom.stage}}
+              - ${self:custom.allowedCorsOrigins.dev}
           request:
             parameters:
               paths:
@@ -63,10 +80,13 @@ functions:
   getGameState:
     handler: src/endpoints/getGameState.lambdaHandler
     events:
-      - http: # TODO - What's the difference between http and httpApi event types?
+      - http:
           path: game/{gameId}/state
           method: get
-          cors: true
+          cors:
+            origins:
+              - ${self:custom.allowedCorsOrigins.${self:custom.stage}}
+              - ${self:custom.allowedCorsOrigins.dev}
           request:
             parameters:
               paths:
@@ -75,26 +95,29 @@ functions:
   postMove:
     handler: src/endpoints/postMove.lambdaHandler
     events:
-      - http: # TODO - What's the difference between http and httpApi event types?
+      - http:
           path: game/{gameId}/move
           method: post
-          cors: true
+          cors:
+            origins:
+              - ${self:custom.allowedCorsOrigins.${self:custom.stage}}
+              - ${self:custom.allowedCorsOrigins.dev}
           request:
             parameters:
               paths:
                 gameId: true
 
-#    Define function environment variables here
-#    environment:
-#      variable2: value2
+  maintainStaleQueue:
+    handler: src/endpoints/maintainStaleQueue.lambdaHandler
+    events:
+      - schedule: rate(1 minute)
 
 resources:
   Resources:
-
-    games:
+    dynamoGamesTable:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: base-chess-games
+        TableName: ${self:service}-${self:custom.stage}-games
         AttributeDefinitions:
           - AttributeName: gameId
             AttributeType: S
@@ -103,10 +126,10 @@ resources:
             KeyType: HASH
         BillingMode: PAY_PER_REQUEST
 
-    publicQueue:
+    dynamoPublicQueueTable:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: base-chess-public-queue
+        TableName: ${self:service}-${self:custom.stage}-public-queue
         AttributeDefinitions:
           - AttributeName: gameId
             AttributeType: S
@@ -115,10 +138,10 @@ resources:
             KeyType: HASH
         BillingMode: PAY_PER_REQUEST
 
-    privateQueue:
+    dynamoPrivateQueueTable:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: base-chess-private-queue
+        TableName: ${self:service}-${self:custom.stage}-private-queue
         AttributeDefinitions:
           - AttributeName: gameId
             AttributeType: S
@@ -126,7 +149,6 @@ resources:
           - AttributeName: gameId
             KeyType: HASH
         BillingMode: PAY_PER_REQUEST
-
 
 plugins:
   - serverless-domain-manager # https://www.serverless.com/blog/serverless-api-gateway-domain
@@ -134,11 +156,23 @@ plugins:
   - serverless-dotenv-plugin # https://www.serverless.com/plugins/serverless-dotenv-plugin
 
 custom:
+  stage: ${opt:stage, self:custom.stage}
+  allowedCorsOrigins:
+    dev: http://localhost:3000
+    test: http://${self:service}-test.theftofaduck.com
+    prod: http://${self:service}.theftofaduck.com
+
+  domains: # TODO - Make these service.api.domain, not service-api.domain
+    dev: ${self:service}-api-dev.theftofaduck.com
+    test: ${self:service}-api-test.theftofaduck.com
+    prod: ${self:service}-api-prod.theftofaduck.com
+
   customDomain:
-    domainName: 'base-chess-api.theftofaduck.com'
+    domainName: ${self:custom.domains.${self:custom.stage}}
+    stage: ${self:custom.stage}
     certificateName : '*.theftofaduck.com'
     createRoute53Record: true
-    endpointType: 'regional'
+    endpointType: regional
     autoDomain: true
   serverless-offline:
-    httpPort: 3001 # TODO - Set up CORS
+    httpPort: 3001
